@@ -1,6 +1,4 @@
 # Wanderlust API
---
-
 ## To run the server locally:
 * Clone the repository: `git clone https://github.com/c0cky/wandrlustAPI.git`
 * Create a new virtualenv: `virtualenv venv`
