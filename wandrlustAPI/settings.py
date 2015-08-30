@@ -26,7 +26,6 @@ SECRET_KEY = '$jr%ois_6=g4^b+$!7!e551yd89r+!@47jd8rfd_d6w97p+-7%'
 DEBUG = True
 
 
-
 # Application definition
 
 INSTALLED_APPS = (
@@ -37,6 +36,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'v1',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -74,12 +74,12 @@ WSGI_APPLICATION = 'wandrlustAPI.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 
-#DATABASES = {
-#    'default': {
-#        'ENGINE': 'django.db.backends.sqlite3',
-#        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#    }
-#}
+DATABASES = {
+   'default': {
+       'ENGINE': 'django.db.backends.sqlite3',
+       'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+   }
+}
 
 
 # Internationalization
