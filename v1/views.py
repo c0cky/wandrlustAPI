@@ -21,14 +21,12 @@ class UserViewSet(viewsets.ModelViewSet):
     def list(self, request):
         users = User.objects.all()
         page = self.paginate_queryset(users)
+        fields = ('id', 'username', 'url')
+        serializer = self.get_serializer(users, many=True, fields=fields)
 
         if page is not None:
-            serializer = self.get_serializer(page, many=True,
-                                             fields=('id', 'username', 'url'))
+            serializer = self.get_serializer(page, many=True, fields=fields)
             return self.get_paginated_response(serializer.data)
-        print "page is none"
-        serializer = self.get_serializer(users, many=True,
-                                         fields=('id', 'username', 'url'))
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
