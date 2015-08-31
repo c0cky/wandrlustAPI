@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractBaseUser, User
 
 
 # model for the post
-class Post(models.Models):
+class Post(models.Model):
     template = models.IntegerField(null=True, default=0)
     user = models.ForeignKey(User)
 
