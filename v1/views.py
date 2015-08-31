@@ -17,22 +17,23 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     permission_classes = [TokenHasReadWriteScope]
     pagination_class = PageNumberPagination
+    safe_fields = ('id', 'username', 'url')
 
     def list(self, request):
         users = User.objects.all()
         page = self.paginate_queryset(users)
-        fields = ('id', 'username', 'url')
-        serializer = self.get_serializer(users, many=True, fields=fields)
+        serializer = self.get_serializer(
+            users, many=True, fields=self.safe_fields)
 
         if page is not None:
-            serializer = self.get_serializer(page, many=True, fields=fields)
+            serializer = self.get_serializer(
+                page, many=True, fields=self.safe_fields)
             return self.get_paginated_response(serializer.data)
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
         user = get_object_or_404(self.queryset, pk=pk)
-        serializer = self.get_serializer(user, fields=('id',
-                                                       'username', 'url'))
+        serializer = self.get_serializer(user, fields=self.safe_fields)
         return Response(serializer.data)
 
     @list_route(url_path='self')
