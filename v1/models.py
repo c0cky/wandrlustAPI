@@ -10,5 +10,5 @@ class Post(models.Model):
 
 class User(AbstractBaseUser):
     profile_picture = models.ImageField(upload_to='', blank=True)
-    password_token = models.Charfield(length=40, null=True, default='')
-    authentication_token = models.CharField(lenght=40, null=True, default='')
+    password_token = models.CharField(length=40, null=True, default='')
+    authentication_token = models.CharField(length=40, null=True, default='')
