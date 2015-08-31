@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
+
 class DynamicFieldsModelSerializer(serializers.HyperlinkedModelSerializer):
     """
     A ModelSerializer that takes an additional `fields` argument that
@@ -21,7 +22,8 @@ class DynamicFieldsModelSerializer(serializers.HyperlinkedModelSerializer):
             for field_name in existing - allowed:
                 self.fields.pop(field_name)
 
+
 class UserSerializer(DynamicFieldsModelSerializer):
-	class Meta:
-		model = User
-		fields = ('id', 'email', 'username', 'groups', 'url')
+    class Meta:
+        model = User
+        fields = ('id', 'email', 'username', 'groups', 'url')
