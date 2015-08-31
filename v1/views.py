@@ -9,9 +9,14 @@ class UserViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows users to be viewed or edited.
     """
-    queryset = User.objects.all().order_by('-date_joined')
+    queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [TokenHasReadWriteScope]
+
+    def list(self, request):
+    	queryset = User.objects.all()
+    	serializer = self.get_serializer(queryset, many=True, fields=('id', 'username', 'url'))
+    	return Response(serializer.data)
 
     @list_route(url_path='self')
     def self(self, request):
