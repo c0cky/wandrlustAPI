@@ -1,3 +1,6 @@
+import hashlib
+import random
+from django.core.mail import EmailMessage
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
@@ -27,3 +30,23 @@ class UserSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'email', 'username', 'groups', 'url')
+
+    def create(self, validated_data):
+        salt = hashlib.sha1(str(random.random())).hexdigest()[:5]
+        usernamesalt = validated_data['username']
+        if isinstance(usernamesalt, unicode):
+            usernamesalt = usernamesalt.encode('utf8')
+        user = User.objects.create_user(
+            email=validated_data['email'],
+            username=validated_data['username'],
+            password=validated_data['password'],
+            authentication_key=hashlib.sha1(salt+usernamesalt).hexdigest(),
+
+        )
+        user.is_active = False
+        user.save()
+        message = "Enter email message here"
+        email = EmailMessage('Activate', message, to=validated_data['email'])
+        email.send()
+
+        return user
