@@ -36,6 +36,16 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(user, fields=self.safe_fields)
         return Response(serializer.data)
 
+    @list_route(url_path='activate')
+    def activate(self, request):
+        user = get_object_or_404(request.user)
+        if (request.authentication_token == user.authentication_token):
+            user.is_active = True
+        else:
+            return Response()
+        serializer = self.get_serializer(request.user)
+        return Response(serializer.data)
+
     @list_route(url_path='self')
     def self(self, request):
         serializer = self.get_serializer(request.user)
