@@ -44,6 +44,13 @@ class UserViewSet(viewsets.ModelViewSet):
         user = User.objects.get(username=request.data['username'])
         if (request.data['activation_token'] == user.activation_token):
             user.is_active = True
+            # change their token so they cant reactivate from email
+            # after they try to delete
+            salt = hashlib.sha1(str(random.random())).hexdigest()[:5]
+            usernamesalt = user.username
+            if isinstance(usernamesalt, unicode):
+                usernamesalt = usernamesalt.encode('utf8')
+            user.activation_token = hashlib.sha1(salt+usernamesalt).hexdigest()
             user.save()
         else:
             return Response()
@@ -68,5 +75,14 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @list_route(url_path='self')
     def self(self, request):
+        serializer = self.get_serializer(request.user)
+        return Response(serializer.data)
+
+    @list_route(url_path='delete')
+    def destroy(self, request, pk=None):
+        user = User.objects.get(username=request.data['username'])
+        if (user is not None):
+            user.is_active = False
+            user.save()
         serializer = self.get_serializer(request.user)
         return Response(serializer.data)
