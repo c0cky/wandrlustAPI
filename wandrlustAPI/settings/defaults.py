@@ -117,6 +117,8 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 100,
 }
 
+AUTH_USER_MODEL = 'v1.User'
+
 
 # OAuth2 Configuration
 
