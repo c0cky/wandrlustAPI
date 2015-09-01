@@ -1,7 +1,7 @@
 import hashlib
 import random
-from django.core.mail import EmailMessage
-from django.contrib.auth.models import User
+# from django.core.mail import EmailMessage
+from models import User
 from rest_framework import serializers
 
 
@@ -29,7 +29,9 @@ class DynamicFieldsModelSerializer(serializers.HyperlinkedModelSerializer):
 class UserSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'email', 'username', 'groups', 'url')
+        fields = ('id', 'email', 'username', 'password', 'groups', 'url')
+        # so the password isnt returned after POST
+        extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
         salt = hashlib.sha1(str(random.random())).hexdigest()[:5]
@@ -40,13 +42,12 @@ class UserSerializer(DynamicFieldsModelSerializer):
             email=validated_data['email'],
             username=validated_data['username'],
             password=validated_data['password'],
-            authentication_key=hashlib.sha1(salt+usernamesalt).hexdigest(),
-
+            activation_token=hashlib.sha1(salt+usernamesalt).hexdigest(),
         )
         user.is_active = False
         user.save()
-        message = "Enter email message here"
-        email = EmailMessage('Activate', message, to=validated_data['email'])
-        email.send()
+        # message = "Enter email message here"
+        # email = EmailMessage('Activate', message, to=validated_data['email'])
+        # email.send()
 
         return user
