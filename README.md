@@ -5,4 +5,4 @@
 * Install all of the required apps: `pip install -r requirements.txt`
 * Migrate the database: `python manage.py migrate`
 * Create a new super user: `python manage.py createsuperuser`
-* Run the server: `python manage.py runserver --settings="wandrlustAPI.settings.local`
+* Run the server: `python manage.py runserver --settings="wandrlust_api.settings.local`

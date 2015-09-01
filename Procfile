@@ -1,1 +1,1 @@
-web: gunicorn wandrlustAPI.wsgi --log-file -
+web: gunicorn wandrlust_api.wsgi --log-file -
