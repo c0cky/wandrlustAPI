@@ -37,12 +37,17 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
+    'django_comments',
+    'corsheaders',
     'oauth2_provider',
     'rest_framework',
     'v1',
+    's3_folder_storage',
 )
 
 MIDDLEWARE_CLASSES = (
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -78,10 +83,10 @@ WSGI_APPLICATION = 'wandrlust_api.wsgi.application'
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 
 DATABASES = {
-   'default': {
-       'ENGINE': 'django.db.backends.sqlite3',
-       'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-   }
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
 }
 
 
@@ -111,7 +116,7 @@ REST_FRAMEWORK = {
         'oauth2_provider.ext.rest_framework.OAuth2Authentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
+        'oauth2_provider.ext.rest_framework.TokenHasReadWriteScope',
     ),
     'DEFAULT_PAGINATION_CLASS': (
         'rest_framework.pagination.PageNumberPagination',
@@ -127,8 +132,67 @@ AUTH_USER_MODEL = 'v1.User'
 OAUTH2_PROVIDER = {
     # this is the list of available scopes
     'SCOPES': {
-            'read': 'Read scope',
-            'write': 'Write scope',
-            'groups': 'Access to your groups'
+        'read': 'Read scope',
+        'write': 'Write scope',
+        'groups': 'Access to your groups'
     }
 }
+
+# CORS config
+
+# CORS_ORIGIN_WHITELIST = (
+#     '*',
+# )
+#
+# CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_ALLOW_ALL = False
+CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_WHITELIST = (
+    'localhost',
+    'localhost:8000',
+    'http://localhost:3000',
+    'wandrlust-dev.s3-website-us-east-1.amazonaws.com',
+)
+CORS_ORIGIN_REGEX_WHITELIST = (
+    'http://*/*', )
+
+# EMAIL_USE_TLS = True
+# EMAIL_HOST = 'smtp.zoho.com'
+# EMAIL_PORT = 587
+# EMAIL_HOST_USER = 'do-not-reply@wandrlust.co'
+# EMAIL_HOST_PASSWORD = 'camronjaredtrevor'
+# For email
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+EMAIL_USE_SSL = True
+
+EMAIL_HOST = 'smtp.zoho.com'
+
+EMAIL_HOST_USER = 'do-not-reply@wandrlust.co'
+
+# Must generate specific password for your app in [gmail settings][1]
+EMAIL_HOST_PASSWORD = 'camronjaredtrevor'
+
+EMAIL_PORT = 465
+
+# This did the trick
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+SITE_ID = 1
+
+if DEBUG is False:
+    DEFAULT_FILE_STORAGE = 's3_folder_storage.s3.DefaultStorage'
+    DEFAULT_S3_PATH = "media"
+    STATICFILES_STORAGE = 's3_folder_storage.s3.StaticStorage'
+    STATIC_S3_PATH = "static"
+    AWS_ACCESS_KEY_ID = "AKIAI4YEYMUNVM34NFVQ"
+    AWS_SECRET_ACCESS_KEY = "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"
+    AWS_STORAGE_BUCKET_NAME = "wandrlust-dev-files"
+
+    MEDIA_ROOT = '/%s/' % DEFAULT_S3_PATH
+    MEDIA_URL = '//s3.amazonaws.com/%s/media/' % AWS_STORAGE_BUCKET_NAME
+    STATIC_ROOT = "/%s/" % STATIC_S3_PATH
+    STATIC_URL = '//s3.amazonaws.com/%s/static/' % AWS_STORAGE_BUCKET_NAME
+    ADMIN_MEDIA_PREFIX = STATIC_URL + 'admin/'
+    MEDIA_URL = 'https://%s.s3.amazonaws.com/media/' % AWS_STORAGE_BUCKET_NAME
+    STATIC_URL = 'https://%s.s3.amazonaws.com/static/' % AWS_STORAGE_BUCKET_NAME

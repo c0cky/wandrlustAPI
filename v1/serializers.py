@@ -1,11 +1,11 @@
-import hashlib
-import random
 # from django.core.mail import EmailMessage
-from models import User
+from models import Image, Post, Snippet, User, Video, PostImage, PostSnippet, \
+    PostVideo
 from rest_framework import serializers
+from django_comments.models import Comment
 
 
-class DynamicFieldsModelSerializer(serializers.HyperlinkedModelSerializer):
+class DynamicFieldsModelSerializer(serializers.ModelSerializer):
     """
     A ModelSerializer that takes an additional `fields` argument that
     controls which fields should be displayed.
@@ -29,25 +29,92 @@ class DynamicFieldsModelSerializer(serializers.HyperlinkedModelSerializer):
 class UserSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'email', 'username', 'password', 'groups', 'url')
+        fields = ('id', 'email', 'first_name', 'last_name', 'username',
+                  'password', 'bio', 'header_picture', 'profile_picture')
         # so the password isnt returned after POST
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
-        salt = hashlib.sha1(str(random.random())).hexdigest()[:5]
-        usernamesalt = validated_data['username']
-        if isinstance(usernamesalt, unicode):
-            usernamesalt = usernamesalt.encode('utf8')
         user = User.objects.create_user(
-            email=validated_data['email'],
-            username=validated_data['username'],
-            password=validated_data['password'],
-            activation_token=hashlib.sha1(salt+usernamesalt).hexdigest(),
+            **validated_data
         )
-        user.is_active = False
+        user.set_password(validated_data['password'])
         user.save()
-        # message = "Enter email message here"
-        # email = EmailMessage('Activate', message, to=validated_data['email'])
-        # email.send()
-
         return user
+
+
+class CommentSerializer(DynamicFieldsModelSerializer):
+    class Meta:
+        model = Comment
+
+
+class VideoSerializer(DynamicFieldsModelSerializer):
+    class Meta:
+        model = Video
+        fields = ('id', 'video', 'caption')
+
+
+class ImageSerializer(DynamicFieldsModelSerializer):
+    class Meta:
+        model = Image
+        # fields = ('image_file', 'caption')
+
+
+class SnippetSerializer(DynamicFieldsModelSerializer):
+    class Meta:
+        model = Snippet
+        fields = ('id', 'snippet')
+
+
+class PostVideoSerializer(DynamicFieldsModelSerializer):
+    video = VideoSerializer(read_only=True)
+
+    class Meta:
+        model = PostVideo
+        fields = ('id', 'video', 'position')
+
+
+class PostImageSerializer(DynamicFieldsModelSerializer):
+    image = ImageSerializer(read_only=True)
+
+    class Meta:
+        model = PostImage
+        fields = ('id', 'image', 'position')
+
+
+class PostSnippetSerializer(DynamicFieldsModelSerializer):
+    snippet = SnippetSerializer(read_only=True)
+
+    class Meta:
+        model = PostSnippet
+        fields = ('id', 'snippet', 'position')
+
+
+class PostSerializer(DynamicFieldsModelSerializer):
+    images = PostImageSerializer(many=True,
+                                 read_only=True,
+                                 source='get_images')
+    snippets = PostSnippetSerializer(many=True,
+                                     read_only=True,
+                                     source='get_snippets')
+    videos = PostVideoSerializer(many=True,
+                                 read_only=True,
+                                 source='get_videos')
+
+    comments = CommentSerializer(many=True,
+                                 read_only=True,
+                                 source='get_comments')
+
+    author = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Post
+        fields = ('id', 'author', 'submitted_date', 'latitude',
+                  'longitude', 'title', 'images', 'videos', 'snippets',
+                  'comments')
+        depth = 4
+
+    def create(self, validated_attrs):
+        post = Post.objects.create(**validated_attrs)
+        post.save()
+        return post
